@@ -1,357 +1,212 @@
-<div align="center">
+# 🎙️ Speech Emotion Recognition with Deep Learning
 
-# 🌸 VocalBloom - Speech Emotion Recognition
+## Project Description
 
-### *Multi-Task Audio Classification: Emotion, Gender & Speaker Identification*
+This project introduces a deep learning framework capable of understanding human speech by analyzing audio recordings and predicting multiple characteristics simultaneously. Instead of focusing only on emotion recognition, the model also identifies the speaker's gender and identity, making it a comprehensive speech analysis system.
 
-[![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://python.org)
-[![TensorFlow](https://img.shields.io/badge/TensorFlow-2.x-orange.svg)](https://tensorflow.org)
-[![Librosa](https://img.shields.io/badge/Librosa-0.10+-green.svg)](https://librosa.org)
-[![Gradio](https://img.shields.io/badge/Gradio-3.0+-pink.svg)](https://gradio.app)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Status](https://img.shields.io/badge/Status-Completed-success.svg)]()
-
-</div>
+The solution combines advanced audio preprocessing techniques with neural networks to learn meaningful patterns from speech signals and provides predictions through an easy-to-use interactive web application.
 
 ---
 
-## 📋 Table of Contents
+# Objectives
 
-- [Overview](#-overview)
-- [Architecture](#-architecture)
-- [Features](#-features)
-- [Dataset](#-dataset)
-- [Feature Extraction](#-feature-extraction)
-- [Installation](#-installation)
-- [Usage](#-usage)
-- [Results](#-results)
-- [Gradio Demo](#-gradio-demo)
-- [Project Structure](#-project-structure)
-- [Acknowledgments](#-acknowledgments)
+The project aims to:
+
+- Recognize human emotions from speech recordings.
+- Identify the speaker's gender.
+- Recognize individual speakers.
+- Improve classification performance using feature engineering and audio augmentation.
+- Provide a simple interface for testing custom audio files.
 
 ---
 
-## 🎯 Overview
+# Technologies
 
-**VocalBloom** is a deep learning system that analyzes speech audio to simultaneously predict **three attributes**:
-
-- 🎭 **Emotion** — neutral, calm, happy, sad, angry, fearful, disgust, surprised
-- ⚤️ **Gender** — male, female
-- 🎤 **Speaker** — identifies which of 24 actors spoke
-
-The system uses a **CNN-LSTM-Attention architecture** with extensive audio feature engineering and data augmentation to achieve robust classification performance.
-
-> **Dataset:** [RAVDESS Emotional Speech Audio](https://www.kaggle.com/datasets/uwrfkaggler/ravdess-emotional-speech-audio)  
-> **Framework:** TensorFlow / Keras  
-> **Demo:** Gradio web interface
+- Python
+- TensorFlow & Keras
+- Librosa
+- NumPy
+- Scikit-learn
+- Gradio
 
 ---
 
-## 🏗️ Architecture
+# Model Overview
 
-```
-Input Audio (3 seconds, 22,050 Hz)
-         │
-         ▼
-┌─────────────────────────────────────┐
-│      Feature Extraction Pipeline    │
-│  • MFCC (40) + Delta + Delta-Delta  │
-│  • Log-Mel Spectrogram (128)        │
-│  • Chroma (12)                      │
-│  • Spectral Contrast (7)            │
-│  • Pitch (1)                        │
-│  • Energy/RMS (1)                   │
-│  ─────────────────────────────────  │
-│  Total: 229 features × 216 timesteps│
-└─────────────┬───────────────────────┘
-              │
-              ▼
-┌─────────────────────────────────────┐
-│   CNN-LSTM-Attention Model          │
-│  ┌───────────────────────────────┐  │
-│  │ Conv2D (229×1 → 64 filters)   │  │
-│  │ Reshape → Conv1D (128)        │  │
-│  │ BatchNorm + MaxPool + Dropout │  │
-│  │ Conv1D (128)                  │  │
-│  │ BatchNorm + MaxPool + Dropout │  │
-│  │ Bi-LSTM (128, return_seq)     │  │
-│  │ Attention Layer               │  │
-│  │ Dropout(0.5)                  │  │
-│  │ Dense(128, ReLU)              │  │
-│  │ Dropout(0.5)                  │  │
-│  │ Dense(8, Softmax)             │  │
-│  └───────────────────────────────┘  │
-└─────────────┬───────────────────────┘
-              │
-    ┌─────────┼─────────┐
-    ▼         ▼         ▼
- Emotion   Gender   Speaker
- (8-class) (2-class) (24-class)
-```
+The proposed system consists of several stages:
 
-### Model Specifications
+### Audio Processing
 
-| Component | Specification |
-|-----------|---------------|
-| **Input Shape** | (229, 216, 1) — features × timesteps × channels |
-| **CNN Filters** | 64 → 128 → 128 |
-| **LSTM Units** | 128 (Bidirectional) |
-| **Attention** | Custom trainable attention layer |
-| **Dense Layers** | 128 → output |
-| **Total Parameters** | ~500K |
-| **Output Heads** | 3 (Emotion, Gender, Speaker) |
+Each audio sample is normalized and transformed into numerical representations suitable for deep learning.
+
+### Feature Extraction
+
+Multiple acoustic descriptors are extracted, including:
+
+- MFCC
+- Delta MFCC
+- Delta-Delta MFCC
+- Mel Spectrogram
+- Chroma Features
+- Spectral Contrast
+- Pitch
+- RMS Energy
+
+These features provide both spectral and temporal information about speech signals.
+
+### Deep Learning Network
+
+The extracted features are processed by a hybrid neural network composed of:
+
+- Convolutional Neural Networks (CNN)
+- Bidirectional LSTM layers
+- Attention Mechanism
+- Fully Connected Layers
+
+This architecture enables the model to capture both local acoustic features and long-term temporal dependencies.
 
 ---
 
-## ✨ Features
+# Dataset
 
-| Feature | Description |
-|---------|-------------|
-| **Multi-Task Learning** | Single model predicts emotion, gender, and speaker simultaneously |
-| **Rich Feature Engineering** | 229 features extracted per audio sample |
-| **Data Augmentation** | Gaussian noise, time stretch, pitch shift (via Audiomentations) |
-| **Custom Attention** | Trainable attention mechanism for temporal focus |
-| **Class Balancing** | Compute class weights for imbalanced datasets |
-| **Interactive Demo** | Gradio web UI with custom pink/gray theme |
-| **Comprehensive Evaluation** | Confusion matrices, classification reports, accuracy comparison |
+The experiments are conducted using the **RAVDESS Emotional Speech Dataset**.
 
----
+Dataset characteristics include:
 
-## 📊 Dataset
+- 24 professional speakers
+- Male and female voices
+- Eight emotion categories
+- High-quality WAV audio recordings
 
-### RAVDESS (Ryerson Audio-Visual Database of Emotional Speech and Song)
+The dataset is divided into:
 
-- **Source:** [Kaggle - RAVDESS Emotional Speech Audio](https://www.kaggle.com/datasets/uwrfkaggler/ravdess-emotional-speech-audio)
-- **Format:** WAV files, 48kHz, 16-bit
-- **Speakers:** 24 professional actors (12 male, 12 female)
-- **Emotions:** 8 categories
-- **Total Samples:** ~1,440 audio files
-
-### Emotion Mapping
-
-| Code | Emotion | Code | Emotion |
-|------|---------|------|---------|
-| 01 | neutral | 05 | angry |
-| 02 | calm | 06 | fearful |
-| 03 | happy | 07 | disgust |
-| 04 | sad | 08 | surprised |
-
-### Data Split
-
-| Set | Percentage | Purpose |
-|-----|------------|---------|
-| **Train** | 70% | Model training with augmentation |
-| **Validation** | 15% | Hyperparameter tuning, early stopping |
-| **Test** | 15% | Final evaluation |
+- Training Set
+- Validation Set
+- Testing Set
 
 ---
 
-## 🔧 Feature Extraction
+# Data Augmentation
 
-### Audio Preprocessing
+To improve model generalization, several augmentation techniques are applied during training:
 
-```python
-SAMPLE_RATE = 22050    # Resample to 22.05 kHz
-DURATION = 3.0         # 3-second clips
-N_MFCC = 40            # 40 MFCC coefficients
-N_MELS = 128           # 128 Mel bands
-HOP_LENGTH = 512       # Hop length for STFT
-N_FFT = 2048           # FFT window size
-MAX_LEN = 216          # Fixed time steps
-```
+- Random Noise Injection
+- Time Stretching
+- Pitch Shifting
 
-### Extracted Features (229 total)
-
-| Feature | Dimensions | Description |
-|---------|------------|-------------|
-| **MFCC** | 40 | Mel-frequency cepstral coefficients |
-| **MFCC Delta** | 40 | First-order derivative |
-| **MFCC Delta-Delta** | 40 | Second-order derivative |
-| **Log-Mel Spectrogram** | 128 | Mel-scaled power spectrogram |
-| **Chroma** | 12 | 12 pitch classes |
-| **Spectral Contrast** | 7 | Octave-based spectral contrast |
-| **Pitch (YIN)** | 1 | Fundamental frequency |
-| **Energy (RMS)** | 1 | Root mean square energy |
-
-### Data Augmentation
-
-| Technique | Parameters | Purpose |
-|-----------|------------|---------|
-| **Gaussian Noise** | amplitude: 0.001–0.015 | Simulate recording noise |
-| **Time Stretch** | rate: 0.8–1.25 | Vary speaking speed |
-| **Pitch Shift** | semitones: ±4 | Vary voice pitch |
+These techniques increase data diversity and reduce overfitting.
 
 ---
 
-## ⚙️ Installation
+# Project Pipeline
 
-### Prerequisites
-
-- Python 3.8 or higher
-- CUDA-capable GPU (recommended)
-
-### Setup
-
-```bash
-# Clone the repository
-git clone https://github.com/yourusername/vocalbloom-speech-emotion.git
-cd vocalbloom-speech-emotion
-
-# Install dependencies
-pip install -r requirements.txt
-```
-
-### requirements.txt
-
-```
-tensorflow>=2.10.0
-librosa>=0.10.0
-numpy>=1.21.0
-pandas>=1.3.0
-matplotlib>=3.5.0
-seaborn>=0.11.0
-scikit-learn>=1.0.0
-gradio>=3.0.0
-audiomentations>=0.30.0
-soundfile>=0.12.0
-kagglehub>=0.1.0
-tqdm>=4.64.0
+```text
+Audio Input
+      │
+      ▼
+Audio Preprocessing
+      │
+      ▼
+Feature Extraction
+      │
+      ▼
+CNN Layers
+      │
+      ▼
+Bi-LSTM
+      │
+      ▼
+Attention Layer
+      │
+      ▼
+Prediction
+ ┌──────────┬──────────┬──────────┐
+ │ Emotion  │ Gender   │ Speaker  │
+ └──────────┴──────────┴──────────┘
 ```
 
 ---
 
-## 🚀 Usage
+# Performance Evaluation
 
-### 1. Training
+The model is evaluated using several classification metrics:
 
-```bash
-python speechrecognition.py
-```
+- Accuracy
+- Precision
+- Recall
+- F1-Score
+- Confusion Matrix
 
-Training pipeline:
-1. **Download dataset** — via KaggleHub
-2. **Extract features** — 229 features per sample
-3. **Split data** — 70/15/15 train/val/test
-4. **Augment training** — noise, stretch, pitch shift
-5. **Train models** — Emotion (150 epochs), Gender (50 epochs), Speaker (80 epochs)
-6. **Evaluate** — confusion matrices, classification reports
+Separate evaluation is performed for:
 
-### 2. Launch Gradio Demo
+- Emotion Recognition
+- Gender Classification
+- Speaker Identification
 
-```python
-from speechrecognition import ui
-ui.launch()
-```
+---
 
-Or run the script — the Gradio interface starts automatically at the end.
+# User Interface
 
-### 3. Predict Single Audio
+The project includes an interactive **Gradio** application that allows users to upload speech recordings and instantly receive predictions.
 
-```python
-from speechrecognition import predict_all
+The interface displays:
 
-result = predict_all("path/to/audio.wav")
-print(result)
-# Output: {'emotion': 'happy', 'gender': 'female', 'speaker': 'Actor_3'}
+- Predicted Emotion
+- Predicted Gender
+- Identified Speaker
+
+making the system suitable for demonstrations and real-time testing.
+
+---
+
+# Applications
+
+This project can be applied in various domains, including:
+
+- Human–Computer Interaction
+- Virtual Assistants
+- Call Center Analytics
+- Healthcare Monitoring
+- Smart Voice Systems
+- Educational AI Applications
+
+---
+
+# Future Improvements
+
+Future enhancements may include:
+
+- Support for multilingual speech
+- Real-time microphone input
+- Larger emotional speech datasets
+- Transformer-based speech models
+- Mobile and cloud deployment
+
+---
+
+# Project Structure
+
+```text
+Speech-Emotion-Recognition/
+│
+├── speechrecognition.py
+├── requirements.txt
+├── README.md
+│
+├── models/
+├── datasets/
+├── interface/
+└── outputs/
 ```
 
 ---
 
-## 📈 Results
+# Conclusion
 
-### Model Performance
-
-| Task | Model | Test Accuracy | Best Val Accuracy |
-|------|-------|---------------|-------------------|
-| **Emotion** | CNN-LSTM-Attention + Augmentation | ~85% | ~87% |
-| **Gender** | CNN-LSTM | ~95% | ~96% |
-| **Speaker** | CNN-LSTM | ~98% | ~99% |
-
-### Training Configuration
-
-| Parameter | Emotion | Gender | Speaker |
-|-----------|---------|--------|---------|
-| Epochs | 150 | 50 | 80 |
-| Batch Size | 32 | 32 | 32 |
-| Learning Rate | 5e-5 | 1e-4 | 1e-4 |
-| Early Stopping Patience | 20 | 15 | 15 |
-| LR Reduction Factor | 0.5 | 0.2 | 0.2 |
-| Loss Function | Categorical Crossentropy | Binary Crossentropy | Categorical Crossentropy |
-
-### Key Insights
-
-- **Gender** is the easiest task (95%+ accuracy) — pitch and formant features are highly discriminative
-- **Speaker** identification achieves near-perfect accuracy — each actor has distinct vocal characteristics
-- **Emotion** is the most challenging — requires the full attention mechanism and augmentation
-- **Data augmentation** improves emotion accuracy by ~5-8%
+This project demonstrates an effective deep learning solution for speech analysis by combining advanced acoustic feature extraction with CNN, Bi-LSTM, and Attention mechanisms. The developed system successfully recognizes emotions, predicts speaker gender, and identifies individual speakers while providing an interactive interface for practical use.
 
 ---
 
-## 🎨 Gradio Demo
+# Author
 
-### Interface
-
-```
-┌─────────────────────────────────────────┐
-│           🌸🎧 VocalBloom               │
-│                                         │
-│  VocalBloom is an intelligent speech   │
-│  emotion recognition system...          │
-│                                         │
-│  ┌─────────────────────────────────┐    │
-│  │  🎧 Upload Audio               │    │
-│  │  [Drop audio file or record]   │    │
-│  └─────────────────────────────────┘    │
-│                                         │
-│  ┌─────────────────────────────────┐    │
-│  │  🌸 Predictions                │    │
-│  │  {                              │    │
-│  │    "emotion": "happy",          │    │
-│  │    "gender": "female",          │    │
-│  │    "speaker": "Actor_3"         │    │
-│  │  }                              │    │
-│  └─────────────────────────────────┘    │
-└─────────────────────────────────────────┘
-```
-
-### Theme
-
-- **Primary:** Pink (`#db2777`)
-- **Secondary:** Purple
-- **Background:** Soft gray (`#E5E5E5`)
-- **Font:** Poppins
-
----
-
-## 📁 Project Structure
-
-```
-vocalbloom-speech-emotion/
-├── speechrecognition.py       # Main implementation
-├── README.md                   # This file
-├── requirements.txt            # Python dependencies
-├── .gitignore                  # Git ignore rules
-├── .gitattributes              # GitHub language detection
-├── models/                     # Saved model weights (not in repo)
-│   ├── emotion_model.h5
-│   ├── gender_model.h5
-│   └── speaker_model.h5
-└── data/                       # RAVDESS dataset (not in repo)
-    └── ravdess-emotional-speech-audio/
-```
-
----
-
-## 🎓 Acknowledgments
-
-- **Dataset:** [RAVDESS](https://zenodo.org/record/1188976) — Livingstone & Russo, 2018
-- **Libraries:** TensorFlow, Librosa, Gradio, Audiomentations
-- **Architecture:** Inspired by CNN-LSTM models for speech emotion recognition
-
----
-
-<div align="center">
-
-**⭐ Star this repo if you found it helpful!**
-
-</div>
+**Shimaa Said**
