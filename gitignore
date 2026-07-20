@@ -1,0 +1,47 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual environments
+venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Model weights (very large files)
+*.h5
+*.hdf5
+*.pb
+*.ckpt
+*.pth
+models/
+saved_models/
+
+# Dataset (large files)
+data/
+*.wav
+*.mp3
+*.flac
+
+# Output images
+*.png
+*.jpg
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# Temporary files
+tmp.*
